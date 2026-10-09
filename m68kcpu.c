@@ -979,7 +979,20 @@ int m68k_execute(int num_cycles)
 		/* Return point if we had an address error */
 		m68ki_set_address_error_trap(); /* auto-disable (see m68kcpu.h) */
 
-		m68ki_check_bus_error_trap();
+		if(m68ki_check_bus_error_trap() != 0)
+		{
+			/* Back from a bus error. As after an address error, do not
+			 * re-enter the loop when the CPU halted (double fault) or when
+			 * no cycles are left: the do-while below would otherwise run
+			 * the handler's first instruction in this call. */
+			if(CPU_STOPPED)
+			{
+				SET_CYCLES(0);
+				return m68ki_initial_cycles;
+			}
+			if(GET_CYCLES() <= 0)
+				return m68ki_initial_cycles - GET_CYCLES();
+		}
 
 		/* Main loop.  Keep going until we run out of clock cycles */
 		do
