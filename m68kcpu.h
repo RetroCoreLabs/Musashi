@@ -563,6 +563,19 @@ typedef uint32 uint64;
 	#define m68ki_instr_hook(pc)
 #endif /* M68K_INSTRUCTION_HOOK */
 
+/* Exception hook: called at the start of every exception except interrupts
+ * (trap, TRAP #n, trace, privilege violation, bus error, line A, line F,
+ * illegal, format error, address error), with the vector number. */
+#if M68K_EXCEPTION_HOOK
+	#if M68K_EXCEPTION_HOOK == M68K_OPT_SPECIFY_HANDLER
+		#define m68ki_exception_hook(V) M68K_EXCEPTION_CALLBACK(V)
+	#else
+		#error "M68K_EXCEPTION_HOOK supports only M68K_OPT_SPECIFY_HANDLER"
+	#endif
+#else
+	#define m68ki_exception_hook(V)
+#endif /* M68K_EXCEPTION_HOOK */
+
 #if M68K_MONITOR_PC
 	#if M68K_MONITOR_PC == M68K_OPT_SPECIFY_HANDLER
 		#define m68ki_pc_changed(A) M68K_SET_PC_CALLBACK(ADDRESS_68K(A))
@@ -1850,6 +1863,7 @@ static inline void m68ki_stack_frame_1011(uint sr, uint vector, uint pc)
  */
 static inline void m68ki_exception_trap(uint vector)
 {
+	m68ki_exception_hook(vector);
 	uint sr = m68ki_init_exception();
 
 	if(CPU_TYPE_IS_010_LESS(CPU_TYPE))
@@ -1866,6 +1880,7 @@ static inline void m68ki_exception_trap(uint vector)
 /* Trap#n stacks a 0 frame but behaves like group2 otherwise */
 static inline void m68ki_exception_trapN(uint vector)
 {
+	m68ki_exception_hook(vector);
 	uint t = REG_IR & 0xf;
 #if M68K_LOG_TRAP == M68K_OPT_ON
 	M68K_DO_LOG((M68K_LOG_FILEHANDLE "%s at %08x: trap %01x (%s)\n",
@@ -1886,6 +1901,7 @@ static inline void m68ki_exception_trapN(uint vector)
 /* Exception for trace mode */
 static inline void m68ki_exception_trace(void)
 {
+	m68ki_exception_hook(EXCEPTION_TRACE);
 	uint sr = m68ki_init_exception();
 
 	if(CPU_TYPE_IS_010_LESS(CPU_TYPE))
@@ -1913,6 +1929,7 @@ static inline void m68ki_exception_trace(void)
 /* Exception for privilege violation */
 static inline void m68ki_exception_privilege_violation(void)
 {
+	m68ki_exception_hook(EXCEPTION_PRIVILEGE_VIOLATION);
 	uint sr = m68ki_init_exception();
 
 	#if M68K_EMULATE_ADDRESS_ERROR == M68K_OPT_ON
@@ -1936,6 +1953,7 @@ extern jmp_buf m68ki_bus_error_jmp_buf;
 /* Exception for bus error */
 static inline void m68ki_exception_bus_error(void)
 {
+	m68ki_exception_hook(EXCEPTION_BUS_ERROR);
 	int i;
 
 	/* If we were processing a bus error, address error, or reset,
@@ -1982,6 +2000,7 @@ extern int cpu_log_enabled;
 /* Exception for A-Line instructions */
 static inline void m68ki_exception_1010(void)
 {
+	m68ki_exception_hook(EXCEPTION_1010);
 	uint sr;
 #if M68K_LOG_1010_1111 == M68K_OPT_ON
 	M68K_DO_LOG_EMU((M68K_LOG_FILEHANDLE "%s at %08x: called 1010 instruction %04x (%s)\n",
@@ -2000,6 +2019,7 @@ static inline void m68ki_exception_1010(void)
 /* Exception for F-Line instructions */
 static inline void m68ki_exception_1111(void)
 {
+	m68ki_exception_hook(EXCEPTION_1111);
 	uint sr;
 
 #if M68K_LOG_1010_1111 == M68K_OPT_ON
@@ -2027,6 +2047,7 @@ extern int m68ki_trap_callback(int);
 /* Exception for illegal instructions */
 static inline void m68ki_exception_illegal(void)
 {
+	m68ki_exception_hook(EXCEPTION_ILLEGAL_INSTRUCTION);
 	uint sr;
 
 	M68K_DO_LOG((M68K_LOG_FILEHANDLE "%s at %08x: illegal instruction %04x (%s)\n",
@@ -2054,6 +2075,7 @@ static inline void m68ki_exception_illegal(void)
 /* Exception for format errror in RTE */
 static inline void m68ki_exception_format_error(void)
 {
+	m68ki_exception_hook(EXCEPTION_FORMAT_ERROR);
 	uint sr = m68ki_init_exception();
 	m68ki_stack_frame_0000(REG_PC, sr, EXCEPTION_FORMAT_ERROR);
 	m68ki_jump_vector(EXCEPTION_FORMAT_ERROR);
@@ -2065,6 +2087,7 @@ static inline void m68ki_exception_format_error(void)
 /* Exception for address error */
 static inline void m68ki_exception_address_error(void)
 {
+	m68ki_exception_hook(EXCEPTION_ADDRESS_ERROR);
 	uint sr = m68ki_init_exception();
 
 	/* If we were processing a bus error, address error, or reset,

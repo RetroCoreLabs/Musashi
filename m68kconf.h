@@ -220,6 +220,15 @@
 #endif
 
 
+/* Set to M68K_OPT_SPECIFY_HANDLER to have the CPU call M68K_EXCEPTION_CALLBACK
+ * with the vector number at the start of every exception except interrupts.
+ */
+#ifndef M68K_EXCEPTION_HOOK
+#define M68K_EXCEPTION_HOOK         M68K_OPT_OFF
+#define M68K_EXCEPTION_CALLBACK(V)  your_exception_hook_function(V)
+#endif
+
+
 /* If ON, the CPU will emulate the 4-byte prefetch queue of a real 68000 */
 #ifndef M68K_EMULATE_PREFETCH
 #define M68K_EMULATE_PREFETCH       M68K_OPT_OFF
