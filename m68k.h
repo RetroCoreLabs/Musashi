@@ -359,6 +359,15 @@ void m68k_pulse_halt(void);
 /* Trigger a bus error exception */
 void m68k_pulse_bus_error(void);
 
+/* Describe the access that caused the next bus error, for the 68000 /
+ * 68008 group 0 stack frame (access address, R/W, function code).
+ * Call it from the memory callback just before m68k_pulse_bus_error().
+ * write: 0 = the faulting access was a read, nonzero = a write.
+ * fc:    function code 0-7 of the faulting access.
+ * Without this call the 68000 frame carries address 0, read, fc 0.
+ */
+void m68k_set_bus_error_info(unsigned int address, int write, unsigned int fc);
+
 
 /* Context switching to allow multiple CPUs */
 

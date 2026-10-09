@@ -1114,6 +1114,13 @@ void m68k_pulse_bus_error(void)
 	m68ki_exception_bus_error();
 }
 
+void m68k_set_bus_error_info(unsigned int address, int write, unsigned int fc)
+{
+	m68ki_aerr_address = address;
+	m68ki_aerr_write_mode = write ? MODE_WRITE : MODE_READ;
+	m68ki_aerr_fc = fc & 7;
+}
+
 /* Pulse the RESET line on the CPU */
 void m68k_pulse_reset(void)
 {

@@ -1959,8 +1959,16 @@ static inline void m68ki_exception_bus_error(void)
 
 	uint sr = m68ki_init_exception();
 
-	/* Note: This is implemented for 68010 only! */
-	m68ki_stack_frame_1000(REG_PPC, sr, EXCEPTION_BUS_ERROR);
+	/* 68000 / 68008: 7-word group 0 frame (PC, SR, IR, access address,
+	 * R/W + I/N + FC word). The access is described by
+	 * m68k_set_bus_error_info(). Before this branch the 68010 format $8
+	 * frame was pushed for every CPU type.
+	 */
+	if(CPU_TYPE_IS_000(CPU_TYPE))
+		m68ki_stack_frame_buserr(sr);
+	else
+		/* Note: This is implemented for 68010 only! */
+		m68ki_stack_frame_1000(REG_PPC, sr, EXCEPTION_BUS_ERROR);
 
 	m68ki_jump_vector(EXCEPTION_BUS_ERROR);
 
