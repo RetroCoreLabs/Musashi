@@ -1127,6 +1127,16 @@ void m68k_pulse_bus_error(void)
 	m68ki_exception_bus_error();
 }
 
+int m68k_is_halted(void)
+{
+	return (CPU_STOPPED & STOP_LEVEL_HALT) != 0;
+}
+
+int m68k_is_stopped(void)
+{
+	return (CPU_STOPPED & STOP_LEVEL_STOP) != 0;
+}
+
 void m68k_set_bus_error_info(unsigned int address, int write, unsigned int fc)
 {
 	m68ki_aerr_address = address;

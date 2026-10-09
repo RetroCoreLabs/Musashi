@@ -355,6 +355,13 @@ unsigned int m68k_get_virq(unsigned int level);
 /* Halt the CPU as if you pulsed the HALT pin. */
 void m68k_pulse_halt(void);
 
+/* Nonzero when the CPU is halted (HALT pin, or a double bus/address fault).
+ * Only a reset restarts it. */
+int m68k_is_halted(void);
+
+/* Nonzero when the CPU is waiting in a STOP instruction for an interrupt. */
+int m68k_is_stopped(void);
+
 
 /* Trigger a bus error exception */
 void m68k_pulse_bus_error(void);
